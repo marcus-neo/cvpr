@@ -4,8 +4,8 @@ import numpy as np
 import cv2 as cv
 from matplotlib import pyplot as plt
 
-img1 = cv.imread(f"./test3.jpg",0)  #queryimage # left image
-img2 = cv.imread(f"./test4.jpg",0) #trainimage # right image
+img1 = cv.imread(f"./FD/GridOff/3.jpg",0)  #queryimage # left image
+img2 = cv.imread(f"./FD/GridOff/1.jpg",0) #trainimage # right image
 
 sift = cv.SIFT_create()
 
@@ -78,7 +78,7 @@ plt.figure()
 plt.subplot(121), plt.axis('off'), plt.imshow(img5)
 plt.subplot(122), plt.axis('off'), plt.imshow(img3)
 plt.suptitle("Epilines in both images", y = 0.75)
-plt.savefig('Q4_epi.png')
+plt.savefig('Q4_epi_GridOff.png')
 plt.show()
 
 ####################################################
@@ -97,8 +97,8 @@ plt.subplot(121), plt.axis('off'), plt.imshow(cv.cvtColor(img1_rectified, cv.COL
 plt.subplot(122), plt.axis('off'), plt.imshow(cv.cvtColor(img2_rectified, cv.COLOR_BGR2RGB))
 plt.suptitle("Rectified", y = 0.75)
 plt.show()
-cv.imwrite("rectified_1.png", img1_rectified)
-cv.imwrite("rectified_2.png", img2_rectified)
+cv.imwrite("rectified_1_GridOff.png", img1_rectified)
+cv.imwrite("rectified_2_GridOff.png", img2_rectified)
 
 
 
