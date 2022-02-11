@@ -4,8 +4,8 @@ import numpy as np
 import cv2 as cv
 from matplotlib import pyplot as plt
 
-img1 = cv.imread(f"./test3.jpg",0)  #queryimage # left image
-img2 = cv.imread(f"./test4.jpg",0) #trainimage # right image
+img1 = cv.imread(f"./real2.JPG",0)  #queryimage # left image
+img2 = cv.imread(f"./real1.JPG",0) #trainimage # right image
 
 sift = cv.SIFT_create()
 
