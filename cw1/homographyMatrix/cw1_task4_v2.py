@@ -3,8 +3,8 @@ import cv2 as cv
 from matplotlib import pyplot as plt
 
 MIN_MATCH_COUNT = 10
-file1 = f"./HG/0.jpg"
-file2 = f"./HG/9.jpg"
+file1 = f"./data/0.JPG"
+file2 = f"./data/2.JPG"
 
 img1_og = cv.imread(file1)
 img2_og = cv.imread(file2)
@@ -13,7 +13,7 @@ img1 = cv.cvtColor(img1_og, cv.COLOR_BGR2GRAY) # queryImage
 img2 = cv.cvtColor(img2_og, cv.COLOR_BGR2GRAY)# trainImage
 
 # Initiate SIFT detector
-#n_kp = 100
+# n_kp = 1000
 sift = cv.SIFT_create()
 
 # find the keypoints and descriptors with SIFT
@@ -37,7 +37,7 @@ bad = []
 for m,n in matches:
     if m.distance < 0.8*n.distance:
         good.append(m)
-    elif m.distance > 0.99 * n.distance:
+    elif m.distance >= n.distance:
         bad.append(m)
 
 src_pts_bad = np.float32([ kp1[m.queryIdx].pt for m in bad ]).reshape(-1,1,2)
@@ -75,16 +75,17 @@ draw_params_2 = dict(matchColor = (255,0,0), # draw matches in green color
 img3 = cv.drawMatches(cv.cvtColor(img1_og, cv.COLOR_BGR2RGB),kp1,cv.cvtColor(img2_og, cv.COLOR_BGR2RGB),kp2,good,None,**draw_params_1)
 img4 = cv.drawMatches(cv.cvtColor(img1_og, cv.COLOR_BGR2RGB),kp1,cv.cvtColor(img2_og, cv.COLOR_BGR2RGB),kp2,bad,None,**draw_params_2)
 
-plt.imshow(img3, 'gray')
-plt.axis('off')
-plt.savefig('goodcorr.png')
-plt.show()
+# plt.figure(1)
+# plt.imshow(img3, 'gray')
+# plt.axis('off')
+# plt.savefig('goodcorr.png')
+# plt.show()
 
-
-plt.imshow(img4, 'gray')
-plt.axis('off')
-plt.savefig('badcorr.png')
-plt.show()
+# plt.figure(2)
+# plt.imshow(img4, 'gray')
+# plt.axis('off')
+# plt.savefig('badcorr.png')
+# plt.show()
 
 
 #######################################################################
@@ -95,7 +96,7 @@ img_OG = cv.cvtColor(cv.imread(file1), cv.COLOR_BGR2RGB)
 
 transformed_img = cv.warpPerspective(img_test, np.linalg.inv(M), (w,h))
 # create figure
-fig = plt.figure(figsize=(10, 3))
+fig = plt.figure(3, figsize=(10, 3))
 
 # Adds a subplot at the 1st position
 fig.add_subplot(1, 3, 1)
@@ -119,7 +120,7 @@ fig.add_subplot(1, 3, 3)
 # showing image
 plt.imshow(transformed_img)
 plt.axis('off')
-plt.title("H applied to Image 2")
+plt.title("Homography applied to Image 2")
 
 plt.savefig('H_applied.png')
 plt.show(block = True)
