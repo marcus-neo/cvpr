@@ -76,7 +76,6 @@ img3, img4 = drawlines(img2, img1, lines2, pts2, pts1)
 
 cv.imwrite("./outputs/left.jpg", img5)
 cv.imwrite("./outputs/right.jpg", img3)
-exit()
 plt.figure()
 plt.subplot(121), plt.axis('off'), plt.imshow(img5)
 plt.subplot(122), plt.axis('off'), plt.imshow(img3)
