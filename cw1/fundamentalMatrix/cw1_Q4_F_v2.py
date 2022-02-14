@@ -4,8 +4,8 @@ import numpy as np
 import cv2 as cv
 from matplotlib import pyplot as plt
 
-img1 = cv.imread(f"./test3.jpg",0)  #queryimage # left image
-img2 = cv.imread(f"./test4.jpg",0) #trainimage # right image
+img1 = cv.imread(f"./data/f.JPG",0)  #queryimage # left image
+img2 = cv.imread(f"./data/e.JPG",0) #trainimage # right image
 
 sift = cv.SIFT_create()
 
@@ -51,13 +51,13 @@ def drawlines(img1src, img2src, lines, pts1src, pts2src):
     img2color = cv.cvtColor(img2src, cv.COLOR_GRAY2BGR)
     # Edit: use the same random seed so that two images are comparable!
     np.random.seed(0)
-    for r, pt1, pt2 in zip(lines, pts1src, pts2src):
+    for r, pt1, pt2 in tuple(zip(lines, pts1src, pts2src))[:10]:
         color = tuple(np.random.randint(0, 255, 3).tolist())
         x0, y0 = map(int, [0, -r[2]/r[1]])
         x1, y1 = map(int, [c, -(r[2]+r[0]*c)/r[1]])
-        img1color = cv.line(img1color, (x0, y0), (x1, y1), color, 1)
-        img1color = cv.circle(img1color, tuple(pt1), 5, color, -1)
-        img2color = cv.circle(img2color, tuple(pt2), 5, color, -1)
+        img1color = cv.line(img1color, (x0, y0), (x1, y1), color, 5)
+        # img1color = cv.circle(img1color, tuple(pt1), 5, color, -1)
+        # img2color = cv.circle(img2color, tuple(pt2), 5, color, -1)
     return img1color, img2color
 
 # Find epilines corresponding to points in right image (second image) and
@@ -74,6 +74,9 @@ lines2 = cv.computeCorrespondEpilines(
 lines2 = lines2.reshape(-1, 3)
 img3, img4 = drawlines(img2, img1, lines2, pts2, pts1)
 
+cv.imwrite("./outputs/left.jpg", img5)
+cv.imwrite("./outputs/right.jpg", img3)
+exit()
 plt.figure()
 plt.subplot(121), plt.axis('off'), plt.imshow(img5)
 plt.subplot(122), plt.axis('off'), plt.imshow(img3)

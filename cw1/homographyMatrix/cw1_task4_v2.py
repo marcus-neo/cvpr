@@ -3,8 +3,8 @@ import cv2 as cv
 from matplotlib import pyplot as plt
 
 MIN_MATCH_COUNT = 10
-file1 = f"./HG/0.jpg"
-file2 = f"./HG/9.jpg"
+file1 = f"./data/0.JPG"
+file2 = f"./data/2.JPG"
 
 img1_og = cv.imread(file1)
 img2_og = cv.imread(file2)
@@ -37,7 +37,7 @@ bad = []
 for m, n in matches:
     if m.distance < 0.8 * n.distance:
         good.append(m)
-    elif m.distance > 0.99 * n.distance:
+    elif m.distance >= n.distance:
         bad.append(m)
 
 src_pts_bad = np.float32([kp1[m.queryIdx].pt for m in bad]).reshape(-1, 1, 2)
@@ -121,7 +121,7 @@ img_OG = cv.cvtColor(cv.imread(file1), cv.COLOR_BGR2RGB)
 
 transformed_img = cv.warpPerspective(img_test, np.linalg.inv(M), (w, h))
 # create figure
-fig = plt.figure(figsize=(10, 3))
+fig = plt.figure(3, figsize=(10, 3))
 
 # Adds a subplot at the 1st position
 fig.add_subplot(1, 3, 1)
@@ -144,8 +144,8 @@ fig.add_subplot(1, 3, 3)
 
 # showing image
 plt.imshow(transformed_img)
-plt.axis("off")
-plt.title("H applied to Image 2")
+plt.axis('off')
+plt.title("Homography applied to Image 2")
 
 plt.savefig("H_applied.png")
 plt.show(block=True)
