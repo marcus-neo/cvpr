@@ -11,8 +11,8 @@ np.set_printoptions(suppress=True)
 puts = pprint.pprint
 
 #DATA_DIR = "/home/kushal/KV/IP/calib_linear/data/"
-DEBUG_DIR = f"./data/calibration3/debug"
-PATTERN_SIZE = (6, 3)
+DEBUG_DIR = f"./data_new/debug"
+PATTERN_SIZE = (8, 6)
 SQUARE_SIZE = 1.0 #
 
 def show_image(string, image):
@@ -20,7 +20,7 @@ def show_image(string, image):
     cv2.waitKey()
 
 def get_camera_images():
-    images = [f"./data/calibration3/{num}.jpg" for num in range(30)]
+    images = [f"./data_new/{num}.jpg" for num in range(13)]
     #images = sorted(images)
     for each in images:
         yield (each, cv2.imread(each, 0))
