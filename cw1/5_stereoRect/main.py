@@ -12,8 +12,8 @@ camera_mat = np.array([
 ])
 
 dist = np.array([[0.02299966, -0.17932223, 0.00227571, -0.00475911, 0.26282244]])
-img1 = cv2.imread(f"./2.jpg")  #queryimage # left image
-img2 = cv2.imread(f"./0.jpg") #trainimage # right image
+img1 = cv2.imread(f"data/5.jpg")  #queryimage # left image
+img2 = cv2.imread(f"data/6.jpg") #trainimage # right image
 
 sift = cv2.SIFT_create()
 
@@ -85,18 +85,14 @@ lines2 = cv2.computeCorrespondEpilines(
 lines2 = lines2.reshape(-1, 3)
 img3, img4 = drawlines(img2, img1, lines2, pts2, pts1)
 
+plt.figure(1)
 plt.subplot(121), plt.axis('off'), plt.imshow(cv2.cvtColor(img5, cv2.COLOR_BGR2RGB))
 plt.subplot(122), plt.axis('off'), plt.imshow(cv2.cvtColor(img3, cv2.COLOR_BGR2RGB))
 plt.suptitle("Epilines in both images (Before Rectification)", y = 0.75)
 plt.savefig('outputs/epi.png')
-plt.show()
 
 h1, w1, _ = img1.shape
 h2, w2, _ = img2.shape
-
-# _, H1, H2 = cv2.stereoRectifyUncalibrated(
-#     np.float32(pts1), np.float32(pts2), F, imgSize=(w1, h1)
-# )
 
 r1, r2, p1, p2, q, roi1, roi2 = cv2.stereoRectify(camera_mat, dist, camera_mat, dist, (w1, h1), r_est, t_est)
 
@@ -104,12 +100,9 @@ map1x, map1y = cv2.initUndistortRectifyMap(camera_mat, dist, r1, camera_mat, (w1
 map2x, map2y = cv2.initUndistortRectifyMap(camera_mat, dist, r2, camera_mat, (w2, h2), cv2.CV_32FC1)
 
 
-# # Undistort (rectify) the images and save them
-# # Adapted from: https://stackoverflow.com/a/62607343
+# Rectify the images and save them
 img1_rectified = cv2.remap(img1, map1x, map1y, cv2.INTER_LINEAR)
 img2_rectified = cv2.remap(img2, map2x, map2y, cv2.INTER_LINEAR)
-# img1_rectified = cv2.warpPerspective(img1, map1, (w1, h1))
-# img2_rectified = cv2.warpPerspective(img2, p2, (w2, h2))
 
 cv2.imwrite("outputs/rectified_1.png", img1_rectified)
 cv2.imwrite("outputs/rectified_2.png", img2_rectified)
@@ -117,11 +110,11 @@ cv2.imwrite("outputs/rectified_2.png", img2_rectified)
 img1_rectified_show = cv2.cvtColor(img1_rectified, cv2.COLOR_BGR2RGB)
 img2_rectified_show = cv2.cvtColor(img2_rectified, cv2.COLOR_BGR2RGB)
 
+plt.figure(2)
 plt.subplot(121), plt.axis('off'), plt.imshow(img1_rectified_show)
 plt.subplot(122), plt.axis('off'), plt.imshow(img2_rectified_show)
 plt.suptitle("Rectified images")
 plt.savefig('outputs/rectified_images.png')
-plt.show()
 
 imgL = img1_rectified # downsample_image(img1_rectified, 3)
 imgR = img2_rectified # downsample_image(img2_rectified, 3)
@@ -133,8 +126,9 @@ imgRgray = cv2.cvtColor(imgR, cv2.COLOR_BGR2GRAY)
 
 stereo = cv2.StereoBM_create(numDisparities=16, blockSize=5)
 disparity = stereo.compute(imgLgray,imgRgray)
+plt.figure(3)
 plt.imshow(disparity, "gray")
-plt.savefig("outputs/depth_map.jpg")
+plt.savefig("outputs/depth_map.png")
 disparity = disparity.astype(np.float32)
 disparity /= 16.0
 # Convert disparity map to float32 and divide by 16 as shown in documentation
@@ -177,7 +171,7 @@ def create_point_cloud_file(vertices, colors, filename):
                 f.write(f"{item[0]} {item[1]} {item[2]} {int(item[3])} {int(item[4])} {int(item[5])}\n")
 
 
-output_file = "pointCloud.ply"
+output_file = "outputs/pointCloud.ply"
 
 # Generate point cloud file
 create_point_cloud_file(output_points, output_colors, output_file)
