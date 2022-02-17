@@ -1,3 +1,4 @@
+from time import time
 from typing import Tuple, Union
 from cv2 import CV_8SC2
 import numpy as np
@@ -78,6 +79,7 @@ def correspondences_automation(
 
 
 if __name__ == "__main__":
+    start_time = time()
     image_1 = "data/LEFT_IMG.JPG"
     image_2 = "data/RIGHT_IMG.JPG"
     ogimg1 = cv2.imread(image_1)
@@ -85,4 +87,7 @@ if __name__ == "__main__":
     ret, src, dst, src_bad, dst_bad = correspondences_automation(
         ogimg1, ogimg2
     )
-    print(src, dst, src_bad, dst_bad)
+    end_time = time()
+    # print(src, dst, src_bad, dst_bad)
+    print(len(src))
+    print("time:", end_time-start_time)

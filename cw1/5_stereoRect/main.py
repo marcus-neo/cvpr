@@ -1,5 +1,5 @@
 # https://www.andreasjakl.com/understand-and-apply-stereo-rectification-for-depth-maps-part-2/
-
+from copy import deepcopy
 import numpy as np
 import cv2 as cv2
 from matplotlib import pyplot as plt
@@ -55,9 +55,11 @@ pts2 = pts2[mask.ravel()==1]
 def drawlines(img1src, img2src, lines, pts1src, pts2src):
     ''' img1 - image on which we draw the epilines for the points in img2
         lines - corresponding epilines '''
+    img1_copy = deepcopy(img1src)
+    img2_copy = deepcopy(img2src)
     r, c, _ = img1src.shape
-    img1color = img1src
-    img2color = img2src
+    img1color = img1_copy
+    img2color = img2_copy
     # img1color = cv2.cvtColor(img1src, cv2.COLOR_GRAY2BGR)
     # img2color = cv2.cvtColor(img2src, cv2.COLOR_GRAY2BGR)
     # Edit: use the same random seed so that two images are comparable!
