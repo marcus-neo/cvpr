@@ -77,4 +77,4 @@ if __name__ == "__main__":
     rate = good_points / time_taken
     print("good points", good_points)
     print("time:", time_taken)
-    print("points per second," rate)
+    print("points per second", rate)
