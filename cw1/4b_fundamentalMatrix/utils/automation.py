@@ -31,15 +31,15 @@ def corrs_automation(
         - The transformed homography matrix (if find_h is True).
     """
     # Convert the images to grayscale
-    img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)  # queryImage
-    img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)  # trainImage
+    img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)  # queryImage
+    img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)  # trainImage
 
     # Initiate the SIFT detector
     sift = cv2.SIFT_create()
 
     # Using SIFT, identify the keypoints and descriptors
-    kp1, des1 = sift.detectAndCompute(img1, None)
-    kp2, des2 = sift.detectAndCompute(img2, None)
+    kp1, des1 = sift.detectAndCompute(img1_gray, None)
+    kp2, des2 = sift.detectAndCompute(img2_gray, None)
 
     # FLANN parameters
     FLANN_INDEX_KDTREE = 1
@@ -70,7 +70,7 @@ def corrs_automation(
 
     M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
     matchesMask = mask.ravel().tolist()
-    h, w = img1.shape
+    h, w = img1_gray.shape
     pts = np.float32([[0, 0], [0, h - 1], [w - 1, h - 1], [w - 1, 0]]).reshape(
         -1, 1, 2
     )
@@ -79,15 +79,16 @@ def corrs_automation(
     img2 = cv2.polylines(img2, [np.int32(dst)], True, 255, 3, cv2.LINE_AA)
 
     draw_params_1 = dict(
+        matchesThickness=5,
         matchColor=(0, 255, 0),  # draw matches in green color
         singlePointColor=None,
         matchesMask=matchesMask,  # draw only inliers
         flags=2,
     )
     img3 = cv2.drawMatches(
-        cv2.cvtColor(img1, cv2.COLOR_GRAY2RGB),
+        cv2.cvtColor(img1, cv2.COLOR_BGR2RGB),
         kp1,
-        cv2.cvtColor(img2, cv2.COLOR_GRAY2RGB),
+        cv2.cvtColor(img2, cv2.COLOR_BGR2RGB),
         kp2,
         good,
         None,

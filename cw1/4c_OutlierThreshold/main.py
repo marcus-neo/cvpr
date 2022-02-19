@@ -95,8 +95,7 @@ if __name__ == "__main__":
 
     matches = flann.knnMatch(des1, des2, k=2)
     # store all the good matches as per Lowe's ratio test.
-    print(len(matches))
-    exit()
+
     good_pts = []
     bad_pts = []
     for m, n in matches:
