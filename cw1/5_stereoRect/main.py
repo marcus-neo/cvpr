@@ -48,9 +48,6 @@ E, mask = cv2.findEssentialMat(pts1, pts2, camera_mat, cv2.RANSAC, threshold=5.0
 # Estimate the rotation and translation matrix
 points, r_est, t_est, mask_pose = cv2.recoverPose(E, pts1, pts2, camera_mat)
 
-# We select only inlier points
-pts1 = pts1[mask.ravel()==1]
-pts2 = pts2[mask.ravel()==1] 
 
 def drawlines(img1src, img2src, lines, pts1src, pts2src):
     ''' img1 - image on which we draw the epilines for the points in img2

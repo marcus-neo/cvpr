@@ -2,17 +2,16 @@ from time import time
 from typing import Optional, Tuple, Union
 import numpy as np
 import cv2
-from matplotlib import pyplot as plt
 
 MIN_MATCH_COUNT = 10
-
 
 def corrs_automation(
     img1: np.ndarray,
     img2: np.ndarray,
-    find_h: Optional[bool] = False,
+    return_outliers: Optional[bool]=False,
 ) -> Tuple[
     bool,
+    Union[np.ndarray, None],
     Union[np.ndarray, None],
     Union[np.ndarray, None],
     Union[np.ndarray, None],
@@ -21,25 +20,26 @@ def corrs_automation(
 
     :param img1: The first image.
     :param img2: The second image.
-    :param find_h: Using the source points and destination points,
-        find the homography matrix.
-    :return: A dictionary containing the following:
+    :param return_outliers: Whether or not to return outlier matches.
+    :return: A tuple containing the following:
         - A boolean indicating whether or not the images were matched.
         (And if images were matched,)
-        - The source points and destination points of good matches.
-        - The source points and destination points of bad matches.
-        - The transformed homography matrix (if find_h is True).
+        - The sorted source points of inlier matches.
+        - The sorted destination points of inlier matches.
+        (And if return_bad is True,)
+        - The sorted source points of outlier matches.
+        - The sorted destination points of outlier matches.
     """
     # Convert the images to grayscale
-    img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)  # queryImage
-    img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)  # trainImage
+    img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)  # queryImage
+    img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)  # trainImage
 
     # Initiate the SIFT detector
     sift = cv2.SIFT_create()
 
     # Using SIFT, identify the keypoints and descriptors
-    kp1, des1 = sift.detectAndCompute(img1_gray, None)
-    kp2, des2 = sift.detectAndCompute(img2_gray, None)
+    kp1, des1 = sift.detectAndCompute(img1, None)
+    kp2, des2 = sift.detectAndCompute(img2, None)
 
     # FLANN parameters
     FLANN_INDEX_KDTREE = 1
@@ -54,52 +54,35 @@ def corrs_automation(
 
     # Store all the good matches as per Lowe's ratio test.
     # Also store all the bad matches, i.e. distance > 0.99
-    good = []
+    inliers_tup = []
+    outliers_tup = [] if return_outliers else None
     for m, n in matches:
         if m.distance < 0.8 * n.distance:
-            good.append(m)
+            inliers_tup.append((m, m.distance/n.distance))
+        elif return_outliers:
+            outliers_tup.append((m, m.distance/n.distance))
+    
+    inliers_tup.sort(key=lambda tup: tup[1])
+    inliers, _ = list(zip(*inliers_tup))
 
-    if len(good) < MIN_MATCH_COUNT:
+    if len(inliers) < MIN_MATCH_COUNT:
         return False, None, None
 
-    # Store the source and destination points of the good matches
-    src_pts = np.float32([kp1[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
-    dst_pts = np.float32([kp2[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
-    if not find_h:
-        return True, src_pts, dst_pts, None
-
-    M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
-    matchesMask = mask.ravel().tolist()
-    h, w = img1_gray.shape
-    pts = np.float32([[0, 0], [0, h - 1], [w - 1, h - 1], [w - 1, 0]]).reshape(
-        -1, 1, 2
-    )
-    dst = cv2.perspectiveTransform(pts, M)
-
-    img2 = cv2.polylines(img2, [np.int32(dst)], True, 255, 3, cv2.LINE_AA)
-
-    draw_params_1 = dict(
-        matchesThickness=50,
-        matchColor=(0, 255, 0),  # draw matches in green color
-        singlePointColor=None,
-        matchesMask=matchesMask,  # draw only inliers
-        flags=2,
-    )
-    img3 = cv2.drawMatches(
-        cv2.cvtColor(img1, cv2.COLOR_BGR2RGB),
-        kp1,
-        cv2.cvtColor(img2, cv2.COLOR_BGR2RGB),
-        kp2,
-        good,
-        None,
-        **draw_params_1,
-    )
-
-    plt.imshow(img3, "gray")
-    plt.axis("off")
-    plt.savefig("goodcorr.png")
+    # Store the source and destination points of the inlier matches
+    src_pts = np.float32([kp1[m.queryIdx].pt for m in inliers]).reshape(-1, 1, 2)
+    dst_pts = np.float32([kp2[m.trainIdx].pt for m in inliers]).reshape(-1, 1, 2)
     
-    return True, src_pts, dst_pts, M
+    src_pts_outliers = None
+    dst_pts_outliers = None
+
+    if return_outliers:
+        outliers_tup.sort(key=lambda tup: tup[1])
+        outliers, _ = list(zip(*outliers_tup))
+        # Store the source and destination points of the outlier matches
+        src_pts_outliers = np.float32([kp1[m.queryIdx].pt for m in outliers]).reshape(-1, 1, 2)
+        dst_pts_outliers = np.float32([kp2[m.trainIdx].pt for m in outliers]).reshape(-1, 1, 2)
+
+    return True, src_pts, dst_pts, src_pts_outliers, dst_pts_outliers
 
 
 if __name__ == "__main__":
@@ -108,7 +91,7 @@ if __name__ == "__main__":
     image_2 = "data/RIGHT_IMG.JPG"
     ogimg1 = cv2.imread(image_1)
     ogimg2 = cv2.imread(image_2)
-    ret, src, dst, _ = corrs_automation(
+    ret, src, dst, _, _ = corrs_automation(
         ogimg1, ogimg2
     )
     end_time = time()

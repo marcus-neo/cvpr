@@ -1,5 +1,5 @@
 import numpy as np
-import cv2 as cv
+import cv2
 from matplotlib import pyplot as plt
 
 from utils.automation import corrs_automation
@@ -8,19 +8,26 @@ MIN_MATCH_COUNT = 10
 file1 = f"./data/0.JPG"
 file2 = f"./data/2.JPG"
 
-img1_og = cv.imread(file1)
-img2_og = cv.imread(file2)
+img1_og = cv2.imread(file1)
+img2_og = cv2.imread(file2)
 
-ret, src_pts, dst_pts, M = corrs_automation(
-    img1_og, img2_og, find_h=True
-)
+ret, src_pts, dst_pts, _, _ = corrs_automation(
+    img1_og, img2_og, return_outliers=False
+) # Refer to appendix D
+
+M, _ = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
+h, w, _ = img1_og.shape
+pts = np.float32([[0, 0], [0, h - 1], [w - 1, h - 1], [w - 1, 0]]).reshape(
+        -1, 1, 2
+    )
+dst = cv2.perspectiveTransform(pts, M)
 
 ### APPLY HOMOGRAPHY MATRIX BACK TO IMAGE
-img_test = cv.cvtColor(img2_og, cv.COLOR_BGR2RGB)
-img_OG = cv.cvtColor(img1_og, cv.COLOR_BGR2RGB)
+img_test = cv2.cvtColor(img2_og, cv2.COLOR_BGR2RGB)
+img_OG = cv2.cvtColor(img1_og, cv2.COLOR_BGR2RGB)
 (h, w) = img_test.shape[:2]
 
-transformed_img = cv.warpPerspective(img_test, np.linalg.inv(M), (w, h))
+transformed_img = cv2.warpPerspective(img_test, np.linalg.inv(M), (w, h))
 # create figure
 fig = plt.figure(3, figsize=(10, 3))
 

@@ -5,37 +5,11 @@ import numpy as np
 import cv2 as cv
 from matplotlib import pyplot as plt
 
+from utils.constants import PERM_LUT
+
 MIN_MATCH_COUNT = 10
 FILE_1 = f"./data/0.JPG"
 FILE_2 = f"./data/2.JPG"
-
-PERM_LUT = [
-    (0.5, 0.9),
-    (0.5, 0.84),
-    (0.5, 0.86),
-    (0.5, 0.88),
-    (0.49, 0.9),
-    (0.49, 0.84),
-    (0.49, 0.86),
-    (0.49, 0.88),
-    (0.48, 0.9),
-    (0.48, 0.84),
-    (0.48, 0.86),
-    (0.48, 0.88),
-    (0.47, 0.9),
-    (0.47, 0.84),
-    (0.47, 0.86),
-    (0.47, 0.88),
-    (0.46, 0.9),
-    (0.46, 0.84),
-    (0.46, 0.85),
-    (0.46, 0.84),
-    (0.45, 0.84),
-    (0.44, 0.82),
-    (0.45, 0.82),
-    (0.46, 0.82),
-    (0.47, 0.82),
-]
 
 def threshold_search(sorted_good, sorted_bad, ratio_bad, upper_limit_bad=1.0):
     sorted_bad = [item for item in sorted_bad if item[1]<=upper_limit_bad]
@@ -75,7 +49,6 @@ if __name__ == "__main__":
 
     img1 = cv.cvtColor(img1_og, cv.COLOR_BGR2GRAY)  # queryImage
     img2 = cv.cvtColor(img2_og, cv.COLOR_BGR2GRAY)  # trainImage
-
     # Initiate SIFT detector
     sift = cv.SIFT_create()
 
@@ -112,7 +85,14 @@ if __name__ == "__main__":
 
     for num, (ratio_bad, upper_limit_bad) in enumerate(PERM_LUT):
         print(f"Performing calculations for ratio {ratio_bad} and bad upper limit {upper_limit_bad}.")
-        output_dict = threshold_search(good_pts, bad_pts, ratio_bad, upper_limit_bad)
+        try:
+            output_dict = threshold_search(good_pts, bad_pts, ratio_bad, upper_limit_bad)
+        except ValueError as err:
+            with open("result.csv", "a" , newline="") as csvfile:
+                csv_writer = csv.writer(csvfile, delimiter=",")
+                csv_writer.writerow([ratio_bad, upper_limit_bad, str(err)])
+            continue
+
         final_pts = output_dict["final_pts"]
         avg_good = output_dict["average_good"]
         avg_bad = output_dict["average_bad"]
